@@ -1,0 +1,28 @@
+# Временные файлы
+*.tmp
+*.log
+*.swp
+*.swo
+*~
+
+# OS файлы
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE файлы
+.vscode/
+.idea/
+*.sublime-*
+
+# Приватные ключи и конфиги (если вдруг кто-то добавит)
+*.key
+*.pem
+*.crt
+config.json
+vless_config.txt
+whiteknight_info.txt
+
+# Бэкапы
+*.bak
+*.backup

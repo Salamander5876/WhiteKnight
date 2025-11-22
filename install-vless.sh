@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #####################################################################
-# VLESS + XHTTP Auto Installer для обхода блокировок
+# VLESS + WebSocket Auto Installer для обхода блокировок
 # Поддержка: Ubuntu 20.04+, Debian 10+
 # Автор: WhiteKnight VPN Setup
 #####################################################################
@@ -21,7 +21,7 @@ print_logo() {
     echo -e "${BLUE}"
     echo "╔═══════════════════════════════════════════════════════╗"
     echo "║                                                       ║"
-    echo "║          VLESS + XHTTP VPN Auto Installer            ║"
+    echo "║       VLESS + WebSocket VPN Auto Installer           ║"
     echo "║        Максимальная защита и обход блокировок         ║"
     echo "║                                                       ║"
     echo "╚═══════════════════════════════════════════════════════╝"
@@ -153,7 +153,7 @@ generate_certificate() {
 
 # Создание конфигурации Xray
 create_xray_config() {
-    log_info "Создание конфигурации Xray с VLESS + XHTTP..."
+    log_info "Создание конфигурации Xray с VLESS + WebSocket + TLS..."
 
     UUID=$(generate_uuid)
     WS_PATH=$(generate_random_path)
@@ -175,36 +175,41 @@ create_xray_config() {
         "clients": [
           {
             "id": "$UUID",
-            "level": 0,
-            "email": "user@whiteknight"
+            "level": 0
           }
         ],
         "decryption": "none"
       },
       "streamSettings": {
-        "network": "xhttp",
+        "network": "ws",
         "security": "tls",
         "tlsSettings": {
-          "serverName": "$PUBLIC_IP",
           "certificates": [
             {
               "certificateFile": "/usr/local/etc/xray/cert/cert.crt",
               "keyFile": "/usr/local/etc/xray/cert/private.key"
             }
           ],
-          "minVersion": "1.3",
-          "maxVersion": "1.3",
-          "cipherSuites": "TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256",
-          "alpn": ["h2", "http/1.1"]
+          "minVersion": "1.2",
+          "cipherSuites": "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256:TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256:TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384:TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384:TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256:TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+          "alpn": [
+            "h2",
+            "http/1.1"
+          ]
         },
-        "xhttpSettings": {
+        "wsSettings": {
           "path": "$WS_PATH",
-          "host": "$PUBLIC_IP"
+          "headers": {
+            "Host": "$PUBLIC_IP"
+          }
         }
       },
       "sniffing": {
         "enabled": true,
-        "destOverride": ["http", "tls", "quic"]
+        "destOverride": [
+          "http",
+          "tls"
+        ]
       }
     }
   ],
@@ -221,16 +226,20 @@ create_xray_config() {
     }
   ],
   "routing": {
-    "domainStrategy": "IPIfNonMatch",
+    "domainStrategy": "AsIs",
     "rules": [
       {
         "type": "field",
-        "ip": ["geoip:private"],
+        "ip": [
+          "geoip:private"
+        ],
         "outboundTag": "block"
       },
       {
         "type": "field",
-        "protocol": ["bittorrent"],
+        "protocol": [
+          "bittorrent"
+        ],
         "outboundTag": "block"
       }
     ]
@@ -292,8 +301,8 @@ generate_vless_link() {
     WS_PATH=$(cat /tmp/vless_path)
     PORT=$(cat /tmp/vless_port)
 
-    # VLESS ссылка для AmneziaVPN
-    VLESS_LINK="vless://${UUID}@${PUBLIC_IP}:${PORT}?encryption=none&security=tls&type=xhttp&host=${PUBLIC_IP}&path=${WS_PATH}&sni=${PUBLIC_IP}&alpn=h2,http/1.1#WhiteKnight-VPN"
+    # VLESS ссылка для AmneziaVPN (WebSocket + TLS)
+    VLESS_LINK="vless://${UUID}@${PUBLIC_IP}:${PORT}?encryption=none&security=tls&type=ws&host=${PUBLIC_IP}&path=${WS_PATH}#WhiteKnight-VPN"
 
     echo "$VLESS_LINK" > /root/vless_config.txt
 }
@@ -314,12 +323,12 @@ display_result() {
     echo ""
     echo -e "${BLUE}═══════════════════ ДАННЫЕ ДЛЯ ПОДКЛЮЧЕНИЯ ═══════════════════${NC}"
     echo ""
-    echo -e "${YELLOW}Протокол:${NC} VLESS + XHTTP"
+    echo -e "${YELLOW}Протокол:${NC} VLESS + WebSocket"
     echo -e "${YELLOW}IP адрес:${NC} $PUBLIC_IP"
     echo -e "${YELLOW}Порт:${NC} $PORT"
     echo -e "${YELLOW}UUID:${NC} $UUID"
     echo -e "${YELLOW}Путь:${NC} $WS_PATH"
-    echo -e "${YELLOW}Шифрование:${NC} TLS 1.3 (AES-256-GCM, ChaCha20-Poly1305)"
+    echo -e "${YELLOW}Шифрование:${NC} TLS 1.2+ (ChaCha20-Poly1305, AES-256-GCM)"
     echo ""
     echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
     echo ""
@@ -365,12 +374,12 @@ create_info_file() {
 ДАННЫЕ ДЛЯ ПОДКЛЮЧЕНИЯ:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Протокол: VLESS + XHTTP
+Протокол: VLESS + WebSocket
 IP адрес: $PUBLIC_IP
 Порт: $PORT
 UUID: $UUID
 Путь: $WS_PATH
-Шифрование: TLS 1.3 (Maximum Security)
+Шифрование: TLS 1.2+ (ChaCha20-Poly1305, AES-256-GCM)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -403,9 +412,9 @@ $VLESS_LINK
 
 БЕЗОПАСНОСТЬ:
 
-✓ TLS 1.3 с максимальным шифрованием
-✓ AES-256-GCM + ChaCha20-Poly1305
-✓ XHTTP транспорт для обхода DPI
+✓ TLS 1.2+ с сильным шифрованием
+✓ ChaCha20-Poly1305 + AES-256-GCM
+✓ WebSocket транспорт для обхода DPI
 ✓ Рандомизированный путь подключения
 ✓ Sniffing для оптимизации маршрутизации
 
