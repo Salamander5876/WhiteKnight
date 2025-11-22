@@ -32,7 +32,7 @@ ssh root@ВАШ_IP_АДРЕС
 ### Шаг 2: Скачивание скрипта
 
 ```bash
-wget https://raw.githubusercontent.com/YOUR_REPO/WhiteKnight/main/install-vless.sh
+wget https://raw.githubusercontent.com/Salamander5876/WhiteKnight/main/install-vless.sh
 ```
 
 **ИЛИ** если у вас уже есть файл, загрузите его на сервер:
@@ -291,7 +291,7 @@ MIT License - используйте свободно для личных и к�
 
 ### Установка:
 ```bash
-wget https://raw.githubusercontent.com/YOUR_REPO/WhiteKnight/main/install-vless.sh
+wget https://raw.githubusercontent.com/Salamander5876/WhiteKnight/main/install-vless.sh
 chmod +x install-vless.sh
 sudo ./install-vless.sh
 ```

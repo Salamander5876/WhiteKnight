@@ -9,7 +9,7 @@ ssh root@ВАШ_IP_АДРЕС
 
 ### 2️⃣ Запустите установку
 ```bash
-wget https://raw.githubusercontent.com/YOUR_REPO/WhiteKnight/main/install-vless.sh
+wget https://raw.githubusercontent.com/Salamander5876/WhiteKnight/main/install-vless.sh
 chmod +x install-vless.sh
 sudo ./install-vless.sh
 ```
